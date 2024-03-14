@@ -13,59 +13,84 @@ from dataset_tools.templates import (
 ##################################
 # * Before uploading to instance #
 ##################################
-PROJECT_NAME: str = None
-PROJECT_NAME_FULL: str = None
+PROJECT_NAME: str = "CORE50"
+PROJECT_NAME_FULL: str = "CORE50: Continuous Object Recognition Dataset"
 HIDE_DATASET = True  # set False when 100% sure about repo quality
 
 ##################################
 # * After uploading to instance ##
 ##################################
-LICENSE: License = None
-APPLICATIONS: List[Union[Industry, Domain, Research]] = None
-CATEGORY: Category = None
+LICENSE: License = License.CC_BY_SA_4_0()
+APPLICATIONS: List[Union[Industry, Domain, Research]] = [Industry.Robotics()]
+CATEGORY: Category = Category.Robotics()
 
-CV_TASKS: List[CVTask] = None
-ANNOTATION_TYPES: List[AnnotationType] = None
+CV_TASKS: List[CVTask] = [
+    CVTask.ObjectDetection(),
+    CVTask.Identification(),
+    CVTask.MonocularDepthEstimation(),
+]
+ANNOTATION_TYPES: List[AnnotationType] = [AnnotationType.ObjectDetection()]
 
 RELEASE_DATE: Optional[str] = None  # e.g. "YYYY-MM-DD"
 if RELEASE_DATE is None:
-    RELEASE_YEAR: int = None
+    RELEASE_YEAR: int = 2017
 
-HOMEPAGE_URL: str = None
+HOMEPAGE_URL: str = "https://vlomonaco.github.io/core50/index.html"
 # e.g. "https://some.com/dataset/homepage"
 
-PREVIEW_IMAGE_ID: int = None
+PREVIEW_IMAGE_ID: int = 15558939
 # This should be filled AFTER uploading images to instance, just ID of any image.
 
-GITHUB_URL: str = None
+GITHUB_URL: str = "https://github.com/dataset-ninja/core50"
 # URL to GitHub repo on dataset ninja (e.g. "https://github.com/dataset-ninja/some-dataset")
 
 ##################################
 ### * Optional after uploading ###
 ##################################
-DOWNLOAD_ORIGINAL_URL: Optional[Union[str, dict]] = None
+DOWNLOAD_ORIGINAL_URL: Optional[Union[str, dict]] = {
+    "full-size_350x350_images.zip": "http://bias.csr.unibo.it/maltoni/download/core50/core50_350x350.zip",
+    "bbox.zip": "https://vlomonaco.github.io/core50/data/bbox.zip",
+    "full-size_350x350_depth.zip": "http://bias.csr.unibo.it/maltoni/download/core50/core50_350x350_depth.zip",
+    "core50_train.csv": "https://vlomonaco.github.io/core50/data/core50_train.csv",
+    "core50_test.csv": "https://vlomonaco.github.io/core50/data/core50_test.csv",
+}
 # Optional link for downloading original dataset (e.g. "https://some.com/dataset/download")
 
-CLASS2COLOR: Optional[Dict[str, List[str]] | Literal["predefined"]] = "predefined"
+CLASS2COLOR: Optional[Dict[str, List[str]] or Literal["predefined"]] = {
+    "plug adapter": [230, 25, 75],
+    "mobile phone": [60, 180, 75],
+    "scissor": [255, 225, 25],
+    "light bulb": [0, 130, 200],
+    "can": [245, 130, 48],
+    "glass": [145, 30, 180],
+    "ball": [70, 240, 240],
+    "marker": [240, 50, 230],
+    "cup": [210, 245, 60],
+    "remote control": [250, 190, 212],
+}
 # If specific colors for classes are needed, fill this dict (e.g. {"class1": [255, 0, 0], "class2": [0, 255, 0]})
 
 # If you have more than the one paper, put the most relatable link as the first element of the list
 # Use dict key to specify name for a button
-PAPER: Optional[Union[str, List[str], Dict[str, str]]] = None
+PAPER: Optional[Union[str, List[str], Dict[str, str]]] = (
+    "https://proceedings.mlr.press/v78/lomonaco17a.html"
+)
 BLOGPOST: Optional[Union[str, List[str], Dict[str, str]]] = None
 REPOSITORY: Optional[Union[str, List[str], Dict[str, str]]] = {
-    "GitHub": "some_link_to_repo_if_exists"
+    "GitHub": "https://github.com/vlomonaco/core50"
 }
 
 CITATION_URL: Optional[str] = None
-AUTHORS: Optional[List[str]] = None
-AUTHORS_CONTACTS: Optional[List[str]] = None
+AUTHORS: Optional[List[str]] = ["Vincenzo Lomonaco", "Davide Maltoni"]
+AUTHORS_CONTACTS: Optional[List[str]] = ["vincenzo.lomonaco@unibo.it", "davide.maltoni@unibo.it"]
 
-ORGANIZATION_NAME: Optional[Union[str, List[str]]] = None
-ORGANIZATION_URL: Optional[Union[str, List[str]]] = None
+ORGANIZATION_NAME: Optional[Union[str, List[str]]] = "University of Bologna, Italy"
+ORGANIZATION_URL: Optional[Union[str, List[str]]] = "https://www.unibo.it/en"
 
 # Set '__PRETEXT__' or '__POSTTEXT__' as a key with string value to add custom text. e.g. SLYTAGSPLIT = {'__POSTTEXT__':'some text}
-SLYTAGSPLIT: Optional[Dict[str, Union[List[str], str]]] = None
+SLYTAGSPLIT: Optional[Dict[str, Union[List[str], str]]] = {
+    "__POSTTEXT__": "Additionally, every image marked with its ***session***, ***im id*** and ***sequence*** tags"
+}
 TAGS: Optional[
     List[
         Literal[

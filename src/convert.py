@@ -1,7 +1,10 @@
+import csv
+import glob
 import os
 import shutil
 
 import supervisely as sly
+from dataset_tools.convert import unpack_if_archive
 from supervisely.io.fs import (
     file_exists,
     get_file_name,
@@ -11,7 +14,6 @@ from supervisely.io.fs import (
 from tqdm import tqdm
 
 import src.settings as s
-from dataset_tools.convert import unpack_if_archive
 
 
 def convert_and_upload_supervisely_project(
@@ -19,72 +21,135 @@ def convert_and_upload_supervisely_project(
 ) -> sly.ProjectInfo:
     # Possible structure for bbox case. Feel free to modify as you needs.
 
-    root_path = ""
-    images_folder = "images"
-    bboxes_folder = "labels"
+    images_path = "/home/alex/DATASETS/TODO/CORE/core50_350x350"
     batch_size = 30
-    img_ext = ".png"
-    ann_ext = ".txt"
+    train_path = "/home/alex/DATASETS/TODO/CORE/core50_train.csv"
+    test_path = "/home/alex/DATASETS/TODO/CORE/core50_test.csv"
+
+    group_tag_name = "im_id"
+
+    ds_name_to_data = {"train": train_path, "test": test_path}
 
     def create_ann(image_path):
-        labels, img_tags, label_tags = [], [], []
+        labels = []
+        tags = []
 
-        image_np = sly.imaging.image.read(image_path)[:, :, 0]
-        img_height = image_np.shape[0]
-        img_width = image_np.shape[1]
+        # image_np = sly.imaging.image.read(image_path)[:, :, 0]
+        img_height = 350  # image_np.shape[0]
+        img_wight = 350  # image_np.shape[1]
 
-        file_name = get_file_name(image_path)
-        curr_anns_dirpath = ""
-        ann_path = os.path.join(curr_anns_dirpath, file_name + ann_ext)
+        id_data = get_file_name(image_path)[2:]
+        group_id = sly.Tag(group_tag_meta, value=id_data)
+        tags.append(group_id)
 
-        if file_exists(ann_path):
-            with open(ann_path) as f:
-                content = f.read().split("\n")
-                for curr_data in content:
-                    if len(curr_data) != 0:
-                        curr_data = list(map(float, curr_data.split(" ")))
+        session_value = int(image_path.split("/")[-3][1])
+        session = sly.Tag(session_meta, value=session_value)
+        tags.append(session)
 
-                        left = int((curr_data[1] - curr_data[3] / 2) * img_width)
-                        right = int((curr_data[1] + curr_data[3] / 2) * img_width)
-                        top = int((curr_data[2] - curr_data[4] / 2) * img_height)
-                        bottom = int((curr_data[2] + curr_data[4] / 2) * img_height)
+        seq_value = int(image_path.split("/")[-2][1:])
+        seq = sly.Tag(seq_meta, value=seq_value)
+        tags.append(seq)
 
-                        rectangle = sly.Rectangle(top=top, left=left, bottom=bottom, right=right)
+        obj_class = idx_to_class[seq_value]
 
-                        for obj_class in obj_classes:
-                            if obj_class.name == idx2clsname[curr_data[0]]:
-                                curr_obj_class = obj_class
-                                break
-                        label = sly.Label(rectangle, curr_obj_class, label_tags)
-                        labels.append(label)
+        curr_data = name_to_data[get_file_name_with_ext(image_path)]
 
-        return sly.Annotation(img_size=(img_height, img_width), labels=labels, img_tags=img_tags)
+        curr_data = list(map(int, curr_data))
 
-    class_names = ["class1", "class2", ...]
-    idx2clsname = {}
-    obj_classes = [sly.ObjClass(name, sly.Rectangle) for name in class_names]
+        left = curr_data[0]
+        right = curr_data[2]
+        top = curr_data[1]
+        bottom = curr_data[3]
+        if left < right and top < bottom:
+            rectangle = sly.Rectangle(top=top, left=left, bottom=bottom, right=right)
+            label = sly.Label(rectangle, obj_class)
+            labels.append(label)
+
+        return sly.Annotation(img_size=(img_height, img_wight), labels=labels, img_tags=tags)
+
+    plug = sly.ObjClass("plug adapter", sly.Rectangle)
+    mobile = sly.ObjClass("mobile phone", sly.Rectangle)
+    scissor = sly.ObjClass("scissor", sly.Rectangle)
+    bulb = sly.ObjClass("light bulb", sly.Rectangle)
+    can = sly.ObjClass("can", sly.Rectangle)
+    glass = sly.ObjClass("glass", sly.Rectangle)
+    ball = sly.ObjClass("ball", sly.Rectangle)
+    marker = sly.ObjClass("marker", sly.Rectangle)
+    cup = sly.ObjClass("cup", sly.Rectangle)
+    remote = sly.ObjClass("remote control", sly.Rectangle)
+
+    classes = [plug, mobile, scissor, bulb, can, glass, ball, marker, cup, remote]
+
+    idx_to_class = {}
+    for idx, i in enumerate(range(1, 51, 5)):
+        for j in range(5):
+            idx_to_class[i + j] = classes[idx]
+
+    group_tag_meta = sly.TagMeta(group_tag_name, sly.TagValueType.ANY_STRING)
+    session_meta = sly.TagMeta("session", sly.TagValueType.ANY_NUMBER)
+    seq_meta = sly.TagMeta("sequence", sly.TagValueType.ANY_NUMBER)
 
     project = api.project.create(workspace_id, project_name, change_name_if_conflict=True)
-    meta = sly.ProjectMeta(obj_classes=obj_classes)
+    meta = sly.ProjectMeta(obj_classes=classes, tag_metas=[group_tag_meta, session_meta, seq_meta])
     api.project.update_meta(project.id, meta.to_json())
+    api.project.images_grouping(id=project.id, enable=True, tag_name=group_tag_name)
 
-    for ds_name in os.listdir(root_path):
+    im_name_to_path = {}
+    all_images = glob.glob(images_path + "/*/*/*.png")
+    for im_path in all_images:
+        im_name_to_path[get_file_name_with_ext(im_path)] = im_path
+
+    for ds_name, data_path in ds_name_to_data.items():
+
         dataset = api.dataset.create(project.id, ds_name, change_name_if_conflict=True)
-        dataset_path = os.path.join(root_path, ds_name)
 
-        images_pathes = sly.fs.list_files_recursively(dataset_path, valid_extensions=[img_ext])
+        name_to_data = {}
 
-        pbar = tqdm(desc=f"Create dataset '{ds_name}'", total=len(images_pathes))
-        for images_pathes_batch in sly.batched(images_pathes, batch_size=batch_size):
-            images_names_batch = [
-                get_file_name_with_ext(image_path) for image_path in images_pathes_batch
-            ]
+        with open(data_path, "r") as file:
+            csvreader = csv.reader(file)
+            for idx, row in enumerate(csvreader):
+                if idx > 0:
+                    name_to_data[row[0].replace(".jpg", ".png")] = row[4:]
 
-            img_infos = api.image.upload_paths(dataset.id, images_names_batch, images_pathes_batch)
-            img_ids = [image.id for image in img_infos]
+        images_names = list(name_to_data.keys())
 
-            anns = [create_ann(image_path) for image_path in images_pathes_batch]
+        progress = sly.Progress("Create dataset {}".format(ds_name), len(images_names))
+
+        for img_names_batch in sly.batched(images_names, batch_size=batch_size):
+            img_pathes_batch_dual = []
+            images_names_batch_dual = []
+            img_pathes_batch = []
+            images_names_batch = []
+            for im_name in img_names_batch:
+                im_path = im_name_to_path[im_name]
+                depth_im_name = im_name.replace("C", "D")
+                depth_im_path = im_path.replace(
+                    "core50_350x350", "core50_350x350_DepthMap"
+                ).replace("C_", "D_")
+                if file_exists(depth_im_path):
+                    images_names_batch_dual.extend([im_name, depth_im_name])
+                    img_pathes_batch_dual.extend([im_path, depth_im_path])
+                else:
+                    images_names_batch.append(im_name)
+                    img_pathes_batch.append(im_path)
+
+            img_infos = api.image.upload_paths(
+                dataset.id, images_names_batch_dual, img_pathes_batch_dual
+            )
+            img_ids = [im_info.id for im_info in img_infos]
+
+            anns = []
+            for i in range(0, len(img_pathes_batch_dual), 2):
+                ann = create_ann(img_pathes_batch_dual[i])
+                anns.extend([ann, ann])
             api.annotation.upload_anns(img_ids, anns)
 
-            pbar.update(len(images_names_batch))
+            img_infos = api.image.upload_paths(dataset.id, images_names_batch, img_pathes_batch)
+            img_ids = [im_info.id for im_info in img_infos]
+
+            anns = [create_ann(image_path) for image_path in img_pathes_batch]
+            api.annotation.upload_anns(img_ids, anns)
+
+            progress.iters_done_report(len(img_names_batch))
+
     return project
