@@ -1,11 +1,13 @@
 If you make use of the CORE50 data, please cite the following reference:
 
 ``` bibtex 
-@dataset{CORE50,
-  author={Vincenzo Lomonaco and Davide Maltoni},
-  title={CORE50: Continuous Object Recognition Dataset},
-  year={2017},
-  url={https://vlomonaco.github.io/core50/index.html}
+@InProceedings{lomonaco2017core50,
+  title = {CORe50: a New Dataset and Benchmark for Continuous Object Recognition},
+  author = {Vincenzo Lomonaco and Davide Maltoni},
+  booktitle = {Proceedings of the 1st Annual Conference on Robot Learning},
+  pages = {17--26},
+  year = {2017},
+  volume = {78}
 }
 ```
 

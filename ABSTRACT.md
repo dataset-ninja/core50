@@ -30,7 +30,6 @@ Given that domestic objects typically span less than 100 × 100 pixels at arm's 
 
 <img src="https://github.com/dataset-ninja/core50/assets/120389559/7235d070-f3fd-45cc-91ce-21f178f601db" alt="image" width="800">
 
-<span style="font-size: smaller; font-style: italic;">One frame of the same object throughout the 11 acquisition sessions. Note the variability in
-terms of background, illumination, blurring, occlusion, pose and scale.</span>
+<span style="font-size: smaller; font-style: italic;">One frame of the same object throughout the 11 acquisition sessions. Note the variability in terms of background, illumination, blurring, occlusion, pose and scale.</span>
 
 
