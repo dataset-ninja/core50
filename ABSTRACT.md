@@ -16,7 +16,7 @@ Recent advancements in transfer learning and fine-tuning with deep neural networ
 
 CORe50, specifically designed for (C)ontinuous (O)bject (Re)cognition, is a collection of 50 domestic objects belonging to 10 categories: *plug adapter*, *mobile phone*, *scissor*, *light bulb*, *can*, *glasse*, *ball*, *marker*, *cup* and *remote control*.
 
-<img src="https://github.com/dataset-ninja/core50/assets/120389559/1f338b51-a1fe-40fa-84e4-0e150312350f" alt="image" width="800">
+![Classes](https://github.com/dataset-ninja/core50/assets/120389559/13e57729-bdf7-4f0d-a199-f3f63715f84c)
 
 <span style="font-size: smaller; font-style: italic;">Example images of the 50 objects in CORe50. Each column denotes one of the 10 categories.</span>
 

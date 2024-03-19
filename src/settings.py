@@ -28,6 +28,9 @@ CV_TASKS: List[CVTask] = [
     CVTask.ObjectDetection(),
     CVTask.Identification(),
     CVTask.MonocularDepthEstimation(),
+    CVTask.SemiSupervisedLearning(),
+    CVTask.UnsupervisedLearning(),
+    CVTask.Classification(),
 ]
 ANNOTATION_TYPES: List[AnnotationType] = [AnnotationType.ObjectDetection()]
 
@@ -89,7 +92,7 @@ ORGANIZATION_URL: Optional[Union[str, List[str]]] = "https://www.unibo.it/en"
 
 # Set '__PRETEXT__' or '__POSTTEXT__' as a key with string value to add custom text. e.g. SLYTAGSPLIT = {'__POSTTEXT__':'some text}
 SLYTAGSPLIT: Optional[Dict[str, Union[List[str], str]]] = {
-    "__POSTTEXT__": "Additionally, every image marked with its ***session***, ***im id*** and ***sequence*** tags"
+    "__POSTTEXT__": "Additionally, every image marked with its ***session***, ***im id*** and ***object id*** tags"
 }
 TAGS: Optional[
     List[
@@ -104,7 +107,7 @@ TAGS: Optional[
             "egocentric",
         ]
     ]
-] = None
+] = ["continous-learning", "multi-view", "egocentric"]
 
 
 SECTION_EXPLORE_CUSTOM_DATASETS: Optional[List[str]] = None

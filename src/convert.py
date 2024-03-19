@@ -87,7 +87,7 @@ def convert_and_upload_supervisely_project(
 
     group_tag_meta = sly.TagMeta(group_tag_name, sly.TagValueType.ANY_STRING)
     session_meta = sly.TagMeta("session", sly.TagValueType.ANY_NUMBER)
-    seq_meta = sly.TagMeta("sequence", sly.TagValueType.ANY_NUMBER)
+    seq_meta = sly.TagMeta("object id", sly.TagValueType.ANY_NUMBER)
 
     project = api.project.create(workspace_id, project_name, change_name_if_conflict=True)
     meta = sly.ProjectMeta(obj_classes=classes, tag_metas=[group_tag_meta, session_meta, seq_meta])
